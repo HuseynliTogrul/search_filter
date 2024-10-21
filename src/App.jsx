@@ -11,9 +11,28 @@ function App() {
   useEffect(() => {
     fetch('./data.json')
       .then(res => res.json())
-      .then(data => { setContact(data) })
+      .then(data => {
+        localStorage.setItem('contact', JSON.stringify(data))
+        setContact(data)
+      })
       .catch(err => alert(err.message))
   }, [])
+
+  useEffect(() => {
+    const lsContacts = JSON.parse(localStorage.getItem('contact'))
+    if (!search.length) {
+      setContact(lsContacts)
+    } else {
+      setContact(lsContacts.filter(c => {
+        return (
+          c.first_name.toLowerCase().includes(search.toLowerCase()) ||
+          c.last_name.toLowerCase().includes(search.toLowerCase()) ||
+          c.email.toLowerCase().includes(search.toLowerCase()) ||
+          c.phone.replaceAll('-', '').includes(search.replaceAll(' ', '').replaceAll('-', ''))
+        )
+      }))
+    }
+  }, [search])
 
   const handleChange = (e) => {
     setSearch(e.target.value)
@@ -42,22 +61,18 @@ function App() {
         </thead>
         <tbody>
           {
-            contact?.filter((item) =>
-              item.first_name.toLowerCase().includes(search.toLowerCase())
-            ).length > 0 ? (
-              contact?.filter((item) =>
-                item.first_name.toLowerCase().includes(search.toLowerCase())
-              ).map((item) => (
+            contact?.length > 0 ? (
+              contact.map((item) => (
                 <tr key={item.id}>
-                  <td>{item.first_name}</td>
-                  <td>{item.last_name}</td>
-                  <td>{item.email}</td>
-                  <th>{item.phone}</th>
+                  <td style={{ borderCollapse: 'collapse', border: "1px solid #80808033", fontSize: "1rem" }}>{item.first_name}</td>
+                  <td style={{ borderCollapse: 'collapse', border: "1px solid #80808033", fontSize: "1rem" }}>{item.last_name}</td>
+                  <td style={{ borderCollapse: 'collapse', border: "1px solid #80808033", fontSize: "1rem" }}>{item.email}</td>
+                  <td style={{ borderCollapse: 'collapse', border: "1px solid #80808033", fontSize: "1rem" }}>{item.phone}</td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="4"> Not Found</td>
+                <td style={{ textAlign: "center", padding: "30px 0 30px 0", borderWidth: "1px", borderInline: "solid", borderColor: "#80808033", fontSize: "30px", fontStyle: "italic" }} colSpan="4"> Not Found</td>
               </tr>
             )
           }
